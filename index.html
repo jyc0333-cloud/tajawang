@@ -78,7 +78,7 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
 .mc-best{position:absolute;top:12px;right:12px;background:#fff;--pw:2px;padding:1px 7px;font-size:13px;display:flex;align-items:center;gap:3px;--drop:transparent}
 .c1{background:#ffb86b}.c2{background:#8be28b}.c3{background:#7cc7ff}.c4{background:#c9a2ff}.c5{background:#6fe0d2}.c6{background:#ff9ec7}.c7{background:#ffe066}.c8{background:#ff8a80}.c9{background:#b4e36b}
 @keyframes hop{50%{transform:translateY(-4px)}}
-.tips{margin-top:40px;padding:24px 28px}
+.panel.tips{margin:56px 4px 8px;padding:24px 28px}
 .tips>b{color:var(--ink);display:flex;align-items:center;gap:8px;font-size:21px;margin-bottom:14px}
 .tips ul{margin:0;padding-left:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 36px;font-size:18px;line-height:1.6}
 .tips li::marker{content:'▶ ';color:var(--pink)}
@@ -460,7 +460,7 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
   .mc-name{font-size:20px}
   .mc-desc{font-size:13px}
   .tips ul{grid-template-columns:1fr;gap:12px}
-  .tips{padding:20px}
+  .panel.tips{padding:20px;margin-top:48px}
   .stat-row{grid-template-columns:repeat(2,1fr);gap:12px}
   .key{height:36px;font-size:15px}
   .kb{padding:8px;gap:6px}.kb-row{gap:5px}
@@ -574,6 +574,17 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
   .ol-qr img{width:160px;height:160px}
 }
 
+/* 학생/선생님 구분 */
+.home-foot{display:flex;justify-content:center;margin:30px 0 0}
+.t-link{background:none;border:0;color:var(--ink2);font-size:14px;opacity:.75;padding:6px 10px;text-decoration:underline dotted}
+.t-link:hover{opacity:1}
+.sec-t{color:var(--pink-d)}
+.t-form{margin:10px 4px 6px}
+.t-msg{color:var(--bad);min-height:22px;margin:4px 0 10px}
+.ol-entry.single{grid-template-columns:minmax(0,560px);justify-content:center}
+.ol-make{text-align:center}
+.ol-make .ov-icon{margin-bottom:4px}
+
 </style>
 </head>
 <body>
@@ -600,6 +611,10 @@ var FB_CONFIG_FILE = {
   appId: "1:830160901314:web:0e2573235d639325ee175b"
 };
 var BUILD_WEB = true;
+/* ===== 선생님 비밀번호 =====
+   처음 화면 맨 아래 [🧑‍🏫 선생님]을 누르고 이 비밀번호를 넣으면 '온라인 방 만들기'가 열려요.
+   바꾸고 싶으면 따옴표 안을 고쳐 주세요. */
+var TEACHER_CODE = "tjw7391";
 </script>
 <script>
 "use strict";
@@ -1676,7 +1691,8 @@ const GROUPS = [
   ['a', '⚔️', '액션 게임', '움직이는 낱말을 잡아라'],
   ['b', '🧠', '두뇌 게임', '머리도 쓰고 손도 쓰고'],
   ['c', '🏆', '기록 도전 · 대결', '최고 기록에 도전!'],
-  ['o', '🌐', '온라인 대결', '핀번호로 다같이 · 친구와 1:1']
+  ['o', '🌐', '온라인 대결', '선생님이 알려 준 핀번호로 들어가요'],
+  ['t', '🧑‍🏫', '선생님 메뉴', '선생님만 보이는 메뉴예요']
 ];
 const CARDS = [
   { id: 'keys', icon: '🎯', name: '자리 연습', desc: '손가락 자리 익히기', group: 'p', c: 'c1' },
@@ -1697,9 +1713,31 @@ const CARDS = [
   { id: 'timeattack', icon: '⏱️', name: '60초 타임어택', desc: '1분 동안 최대한 많이', group: 'c', c: 'c5', best: '개' },
   { id: 'rhythm', icon: '🎹', name: '자판 리듬', desc: '박자에 맞춰 톡톡', group: 'c', c: 'c9', best: '점' },
   { id: 'duel', icon: '⚔️', name: '친구 대결', desc: '한 컴퓨터에서 번갈아', group: 'c', c: 'c6' },
-  { id: 'online', icon: '🌐', name: '핀번호 방', desc: '선생님이 방 만들고 다같이', group: 'o', c: 'c3' },
-  { id: 'online1v1', icon: '🤺', name: '1:1 온라인 대결', desc: '핀번호로 친구와 맞대결', group: 'o', c: 'c8' }
+  { id: 'online', icon: '🎟️', name: '핀번호로 참가', desc: '다같이 방 · 1:1 대결 방 입장', group: 'o', c: 'c3' },
+  { id: 'teacherRoom', icon: '📡', name: '온라인 방 만들기', desc: '다같이 방 · 1:1 대결 방', group: 't', c: 'c7' }
 ];
+const TEACHER_CODE_DEFAULT = 'tjw7391';
+function teacherCode() { return (typeof TEACHER_CODE !== 'undefined' && TEACHER_CODE) ? String(TEACHER_CODE) : TEACHER_CODE_DEFAULT; }
+function isTeacher() { return store.get('teacher', false) === true; }
+function teacherDialog() {
+  const m = $('#modal'); if (m._close) m._close();
+  m.innerHTML = `<div class="modal-card pop-in" role="dialog" aria-modal="true">
+    <div class="res-icon">${pxi('🧑‍🏫', 64, 16)}</div><h3 class="pxt">선생님 메뉴</h3>
+    <p class="sub">선생님 비밀번호를 넣으면 이 기기에서 방 만들기 메뉴가 열려요.</p>
+    <form class="t-form"><input class="type-input t-code" type="password" autocomplete="off" placeholder="비밀번호"></form>
+    <p class="t-msg"></p>
+    <div class="res-btns"><button class="btn ghost" data-x>닫기</button><button class="btn primary" data-ok>확인</button></div></div>`;
+  m.classList.add('show'); pxAll(m);
+  const close = () => { m.classList.remove('show'); m.innerHTML = ''; m._close = null; };
+  m._close = close;
+  const ok = () => {
+    if ($('.t-code', m).value.trim() === teacherCode()) { store.set('teacher', true); close(); toast('🧑‍🏫 선생님 메뉴가 열렸어요'); go('home'); setTimeout(() => { const t = $('.sec-t'); t && t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
+    else { $('.t-msg', m).textContent = '❌ 비밀번호가 달라요'; shake($('.t-form', m)); }
+  };
+  $('[data-ok]', m).onclick = ok; $('[data-x]', m).onclick = close;
+  $('.t-form', m).onsubmit = (e) => { e.preventDefault(); ok(); };
+  setTimeout(() => $('.t-code', m).focus(), 50);
+}
 MODES.home = {
   mount(root) {
     const card = (c) => {
@@ -1713,14 +1751,17 @@ MODES.home = {
         <h1 class="pxt">타자왕 도전!</h1>
         <p>위에서 <b>한글 / 영어</b>를 고르고 시작해요 · 낱말 <b>${d.words.length}</b>개 · 문장 <b>${d.sentences.length}</b>개 · 긴 글 <b>${d.long.length}</b>편</p>
       </div>
-      ${GROUPS.map(([g, ic, t, sub]) => `<h2 class="sec-title">${pxi(ic, 30, 14)}<span class="pxt">${t}</span><small>${sub}</small></h2>
+      ${GROUPS.filter(([g]) => g !== 't' || isTeacher()).map(([g, ic, t, sub]) => `<h2 class="sec-title sec-${g}">${pxi(ic, 30, 14)}<span class="pxt">${t}</span><small>${sub}</small></h2>
       <div class="mgrid">${CARDS.filter(c => c.group === g).map(card).join('')}</div>`).join('')}
       <div class="tips panel">
         <b>${pxi('🙆', 22, 14)} 바른 자세 체크</b>
         <ul><li>허리를 펴고 화면은 눈높이에</li><li>손가락은 기본 자리(<b>${state.lang === 'ko' ? 'ㅁㄴㅇㄹ · ㅓㅏㅣ' : 'ASDF · JKL;'}</b>)에 살짝</li><li>자판 말고 <b>화면</b>을 보고 치기</li><li>속도보다 <b>정확도</b>가 먼저!</li></ul>
       </div>
+      <div class="home-foot">${isTeacher() ? '<button class="btn small ghost" data-tout>🔒 선생님 모드 끄기</button>' : '<button class="t-link" data-tin>🧑‍🏫 선생님</button>'}</div>
     </div>`;
     $$('[data-go]', root).forEach(b => b.onclick = () => go(b.dataset.go));
+    const tin = $('[data-tin]', root); if (tin) tin.onclick = teacherDialog;
+    const tout = $('[data-tout]', root); if (tout) tout.onclick = () => { store.set('teacher', false); toast('선생님 모드를 껐어요'); go('home'); };
   }
 };
 
@@ -3505,11 +3546,12 @@ const OL = {
   root: null, unsub: null, pin: null, room: null, view: '', round: 0,
   mount(root, preset) {
     this.root = root; this.preset = preset;
+    if (preset === 'host' && !isTeacher()) { setTimeout(() => go('home'), 0); return; }
     if (!ONLINE_ON) return this.notHere();
-    if (!fbConfig()) return this.setup();
+    if (!fbConfig()) return isTeacher() ? this.setup() : this.paintMsg('🔌', '아직 준비 중이에요', '선생님이 온라인 대결을 연결하면 사용할 수 있어요.');
     this.entry();
   },
-  head(sub) { return `<div class="mode">${modeHead(this.preset === 'duel' ? '🤺' : '🌐', this.preset === 'duel' ? '1:1 온라인 대결' : '핀번호 방')}${sub || ''}`; },
+  head(sub) { const host = this.preset === 'host'; return `<div class="mode">${modeHead(host ? '🧑‍🏫' : '🎟️', host ? '방 만들기 (선생님)' : '핀번호로 참가')}${sub || ''}`; },
   paint(html) { this.root.innerHTML = this.head() + html + '</div>'; bindHead(this.root); pxAll(this.root); },
   notHere() {
     this.paint(`<div class="panel ol-info"><div class="ov-icon">${pxi('🌐', 72, 18)}</div><h3 class="pxt">온라인 대결은 웹 버전에서!</h3>
@@ -3549,25 +3591,19 @@ const OL = {
   },
   async entry() {
     this.leave();
+    if (this.preset === 'host') return this.hostEntry();
     const q = new URLSearchParams(location.search);
     const name = store.get('pname', ''), av = store.get('pav', pick(AVATARS));
     this.av = av;
-    const hostPin = store.get('hostPin', null);
-    this.paint(`<div class="ol-entry">
+    this.paint(`<div class="ol-entry single">
       <div class="panel ol-join">
-        <h3 class="pxt">참가하기</h3>
-        <label class="ol-lab">핀번호<input class="ol-pin" inputmode="numeric" maxlength="4" placeholder="0000" value="${esc(q.get('pin') || '')}"></label>
+        <h3 class="pxt">핀번호로 참가하기</h3>
+        <p class="sub">선생님 화면에 나온 <b>핀번호 4자리</b>를 넣고 입장해요.</p>
+        <label class="ol-lab">핀번호<input class="ol-pin" inputmode="numeric" maxlength="4" placeholder="0000" value="${esc((q.get('pin') || '').replace(/\D/g, '').slice(0, 4))}"></label>
         <label class="ol-lab">내 이름<input class="ol-name" maxlength="10" placeholder="이름 또는 별명" value="${esc(name)}"></label>
-        <div class="ol-avs">${AVATARS.map(a => `<button class="ol-av ${a === av ? 'on' : ''}" data-av="${a}">${pxi(a, 30, 14)}</button>`).join('')}</div>
+        <div class="ol-lab">내 캐릭터</div>
+        <div class="ol-avs">${AVATARS.map(a => `<button class="ol-av ${a === av ? 'on' : ''}" data-av="${a}" aria-label="캐릭터 ${a}">${pxi(a, 30, 14)}</button>`).join('')}</div>
         <button class="btn primary big" data-join>입장하기 ▶</button>
-      </div>
-      <div class="panel ol-make">
-        <h3 class="pxt">방 만들기</h3>
-        ${this.preset === 'duel'
-          ? `<p>방을 만들고 친구에게 <b>핀번호</b>를 알려 주세요. 둘이 모이면 대결 시작!</p><label class="ol-lab">내 이름<input class="ol-name2" maxlength="10" placeholder="이름 또는 별명" value="${esc(name)}"></label><button class="btn primary big" data-make="duel">1:1 방 만들기 ▶</button>`
-          : `<p>선생님(진행자)용이에요. 큰 화면에 <b>핀번호와 QR</b>을 띄우고, 학생들이 들어오면 시작해요.</p><button class="btn primary big" data-make="class">다같이 방 만들기 ▶</button>
-             <p class="sub">1:1로 겨루고 싶다면 처음 화면의 <b>1:1 온라인 대결</b>로!</p>`}
-        ${hostPin ? `<button class="btn small ghost" data-back-room>↩ 내가 만든 방(${esc(hostPin)})으로 돌아가기</button>` : ''}
       </div>
     </div>`);
     const r = this.root;
@@ -3575,25 +3611,43 @@ const OL = {
     $('[data-join]', r).onclick = () => this.join($('.ol-pin', r).value.trim(), $('.ol-name', r).value.trim());
     $('.ol-pin', r).addEventListener('keydown', e => { if (e.key === 'Enter') $('.ol-name', r).focus(); });
     $('.ol-name', r).addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) $('[data-join]', r).click(); });
-    $$('[data-make]', r).forEach(b => b.onclick = () => this.create(b.dataset.make, ($('.ol-name2', r) || {}).value));
+    await this.ensureNet();
+  },
+  async hostEntry() {
+    const hostPin = store.get('hostPin', null);
+    this.paint(`<div class="ol-entry">
+      <div class="panel ol-make">
+        <div class="ov-icon">${pxi('👥', 56, 16)}</div>
+        <h3 class="pxt">다같이 방</h3>
+        <p>큰 화면에 <b>핀번호와 QR</b>을 띄우면 반 전체가 들어와요. 모두 같은 문장으로 실시간 순위 경쟁!</p>
+        <button class="btn primary big" data-make="class">다같이 방 만들기 ▶</button>
+      </div>
+      <div class="panel ol-make">
+        <div class="ov-icon">${pxi('🤺', 56, 16)}</div>
+        <h3 class="pxt">1:1 대결 방</h3>
+        <p>학생 <b>2명</b>만 들어올 수 있는 방이에요. 큰 화면으로 두 사람의 대결을 함께 지켜봐요.</p>
+        <button class="btn primary big" data-make="duel">1:1 대결 방 만들기 ▶</button>
+      </div>
+    </div>
+    ${hostPin ? `<div class="ol-row center"><button class="btn ghost" data-back-room>↩ 내가 만든 방(${esc(hostPin)})으로 돌아가기</button></div>` : ''}`);
+    const r = this.root;
+    $$('[data-make]', r).forEach(b => b.onclick = () => this.create(b.dataset.make));
     const back = $('[data-back-room]', r); if (back) back.onclick = () => this.rejoinHost(hostPin);
-    if (!(await this.ensureNet())) return;
+    await this.ensureNet();
   },
   async ensureNet() {
     try { if (await Net.init()) return true; } catch (e) { console.warn(e); }
     toast('⚠️ Firebase에 연결하지 못했어요. 설정을 확인해 주세요.', 3000);
     store.set('fbcfg', null); this.setup(); return false;
   },
-  async create(mode, name) {
+  async create(mode) {
+    if (!isTeacher()) return;
     if (!(await this.ensureNet())) return;
-    if (mode === 'duel') { name = (name || '').trim(); if (!name) return toast('이름을 먼저 적어 주세요!'); store.set('pname', name); }
     let pin, tries = 0;
     do { pin = String(1000 + Math.random() * 9000 | 0); const ex = await Net.get('rooms/' + pin); if (!ex || (Net.now() - (ex.createdAt || 0)) > 6 * 3600e3) break; } while (tries++ < 20);
-    const room = { mode, host: this.me, status: 'lobby', game: 'race', cnt: mode === 'duel' ? 3 : 3, lang: state.lang, createdAt: Net.now(), round: 0 };
-    if (mode === 'duel') room.players = { [this.me]: { name, av: this.av, p: 0, cpm: 0, score: 0, done: false, t: 0, late: false } };
-    try { await Net.set('rooms/' + pin, room); } catch (e) { return toast('❌ 방을 만들지 못했어요. Firebase 규칙을 확인해 주세요.', 3500); }
+    const room = { mode, host: this.me, status: 'lobby', game: 'race', cnt: 3, lang: state.lang, createdAt: Net.now(), round: 0 };
+    try { await Net.set('rooms/' + pin, room); } catch (e) { return toast('❌ 방을 만들지 못했어요. 인터넷 연결을 확인해 주세요.', 3500); }
     store.set('hostPin', pin);
-    if (mode === 'duel') Net.onDisc(`rooms/${pin}/players/${this.me}`);
     this.listen(pin);
   },
   async rejoinHost(pin) {
@@ -3667,7 +3721,7 @@ const OL = {
       <div class="panel ol-pinbox">
         <div class="ol-pin-label">핀번호</div>
         <div class="ol-pin-big">${esc(this.pin)}</div>
-        ${host ? `<div class="ol-qr"></div><div class="ol-url"><input readonly value="${esc(this.joinURL())}"><button class="btn small" data-copy>복사</button></div>` : `<p class="sub">${duel ? '방장이 시작하면 바로 대결이 시작돼요!' : '선생님이 시작할 때까지 기다려요…'}</p>`}
+        ${host ? `<div class="ol-qr"></div><div class="ol-url"><input readonly value="${esc(this.joinURL())}"><button class="btn small" data-copy>복사</button></div>` : `<p class="sub">${duel ? '1:1 대결 방이에요! 상대가 들어오고 선생님이 시작하면 대결이 시작돼요.' : '선생님이 시작할 때까지 기다려요…'}</p>`}
       </div>
       <div class="panel ol-side">
         ${host ? `<div class="ol-set">
@@ -3851,7 +3905,7 @@ const OL = {
         ${myI >= 0 ? `<div class="ol-myrank">나는 <b>${myI + 1}등</b>!</div>` : ''}
         <div class="podium">${pod}</div>
         <div class="ol-tracks">${olTracks(room, this.me)}</div>
-        <div class="ol-row center">${this.isHost ? `<button class="btn primary big" data-again>한 판 더 ↻</button><button class="btn ghost" data-close>방 닫기</button>` : `<p class="sub">${room.mode === 'duel' ? '방장이 한 판 더를 누르면 다시 시작해요' : '선생님이 다음 판을 준비하면 자동으로 대기실로 가요'}</p><button class="btn small ghost" data-leave>나가기</button>`}</div>
+        <div class="ol-row center">${this.isHost ? `<button class="btn primary big" data-again>한 판 더 ↻</button><button class="btn ghost" data-close>방 닫기</button>` : `<p class="sub">선생님이 다음 판을 준비하면 자동으로 대기실로 가요</p><button class="btn small ghost" data-leave>나가기</button>`}</div>
       </div>
     </div>`);
     const r = this.root;
@@ -3872,8 +3926,9 @@ const OL = {
   },
   unmount() { this.leave(this.joined && this.room && !this.isHost); state.lang = store.get('lang', 'ko') === 'en' ? 'en' : 'ko'; }
 };
-MODES.online = { mount(root) { OL.mount(root, 'class'); }, unmount() { OL.unmount(); } };
-MODES.online1v1 = { mount(root) { OL.mount(root, 'duel'); }, unmount() { OL.unmount(); } };
+MODES.online = { mount(root) { OL.mount(root, 'join'); }, unmount() { OL.unmount(); } };
+MODES.online1v1 = MODES.online;
+MODES.teacherRoom = { mount(root) { OL.mount(root, 'host'); }, unmount() { OL.unmount(); } };
 
 boot();
 
