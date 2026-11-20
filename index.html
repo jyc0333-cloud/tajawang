@@ -598,6 +598,9 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
 .mc-tag{margin-top:6px;background:rgba(255,255,255,.75);padding:1px 7px;font-size:12px;color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
 .ov-pc{background:#e8f4ff;color:var(--ink);font-size:14px;line-height:1.45;padding:6px 10px;margin:0 auto 12px;box-shadow:0 0 0 2px var(--ink);max-width:340px}
 
+.home-foot.ver{margin-top:40px;font-size:12px;color:var(--ink2);opacity:.7}
+.home-foot.ver+.home-foot{margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -1730,6 +1733,7 @@ const CARDS = [
   { id: 'teacherRoom', icon: '📡', name: '온라인 방 만들기', desc: '다같이 방 · 1:1 대결 방', group: 't', c: 'c7' }
 ];
 const TEACHER_CODE_DEFAULT = 'tjw7391';
+const APP_VER = '11.20-6';
 function teacherCode() { return (typeof TEACHER_CODE !== 'undefined' && TEACHER_CODE) ? String(TEACHER_CODE) : TEACHER_CODE_DEFAULT; }
 function isTeacher() { return store.get('teacher', false) === true; }
 function teacherDialog() {
@@ -1770,6 +1774,7 @@ MODES.home = {
         <b>${pxi('🙆', 22, 14)} 바른 자세 체크</b>
         <ul><li>허리를 펴고 화면은 눈높이에</li><li>손가락은 기본 자리(<b>${state.lang === 'ko' ? 'ㅁㄴㅇㄹ · ㅓㅏㅣ' : 'ASDF · JKL;'}</b>)에 살짝</li><li>자판 말고 <b>화면</b>을 보고 치기</li><li>속도보다 <b>정확도</b>가 먼저!</li></ul>
       </div>
+      <div class="home-foot ver">버전 ${APP_VER}</div>
       <div class="home-foot">${isTeacher() ? '<button class="btn small ghost" data-tout>🔒 선생님 모드 끄기</button>' : '<button class="t-link" data-tin>🧑‍🏫 선생님</button>'}</div>
     </div>`;
     $$('[data-go]', root).forEach(b => b.onclick = () => go(b.dataset.go));
@@ -2165,8 +2170,9 @@ function stopGame(mode) {
 }
 const PC_GAMES = ['mole', 'race', 'bomb'];
 function pcHint(id) {
-  return PC_GAMES.includes(id) && (innerWidth <= 480 || innerHeight <= 680)
-    ? '<div class="ov-pc">💻 화면이 작은 휴대폰에서는 입력창이 아래에 있어요.<br>PC나 태블릿에서 하면 더 편해요!</div>' : '';
+  if (!PC_GAMES.includes(id)) return '';
+  const small = innerWidth <= 480 || innerHeight <= 680;
+  return `<div class="ov-pc">💻 <b>PC·태블릿 추천 게임</b>이에요.${small ? '<br>지금처럼 작은 화면에서는 입력창이 아래쪽에 있어요.' : ''}</div>`;
 }
 function startBtnHtml(icon, title, rules, bestKey, unit) {
   const b = getBest(bestKey);
@@ -2217,8 +2223,8 @@ MODES.rain = {
     this.H = this.field.clientHeight; this.groundH = $('.ground', this.root).offsetHeight;
     this.running = true; this.hud(); gameLoop(this);
   },
-  spawnInterval() { return Math.max(0.8, 2.5 - (this.level - 1) * 0.16); },
-  fallTime() { return Math.max(4.6, 13.5 - (this.level - 1) * 0.8); },
+  spawnInterval() { return Math.max(0.85, 2.7 - (this.level - 1) * 0.16); },
+  fallTime() { return Math.max(5, 15 - (this.level - 1) * 0.8); },
   spawn() {
     const pool = DATA[state.lang].words;
     let w, tries = 0;
@@ -2838,7 +2844,7 @@ MODES.zombie = moverMode({
     const top = g.H * 0.36, bottom = g.H - 46 - d.hgt;
     d.baseY = d.kind.cls === 'bat' ? 30 + Math.random() * (g.H * 0.22) : top + Math.random() * Math.max(10, bottom - top);
     d.y = d.baseY;
-    d.vx = -(g.W - 70) / Math.max(6.5, 17.5 - (g.level - 1) * 0.8) * d.kind.sp * (0.9 + Math.random() * 0.2);
+    d.vx = -(g.W - 70) / Math.max(7, 19.5 - (g.level - 1) * 0.8) * d.kind.sp * (0.9 + Math.random() * 0.2);
   },
   move: (g, d, dt) => { d.x += d.vx * dt; d.y = d.baseY + (d.kind.cls === 'ghost' ? Math.sin(d.t * 2 + d.ph) * 14 : d.kind.cls === 'bat' ? Math.sin(d.t * 3.5 + d.ph) * 8 : Math.abs(Math.sin(d.t * 3)) * -3); },
   gone: (g, d) => d.x < 64,
@@ -2859,7 +2865,7 @@ MODES.balloon = moverMode({
   html: (w, k) => `<div class="mover bal ${k.cls}" style="--hue:${k.hue || 0}deg">${pxi(k.icon, 54, 16, 'b-img')}<span class="b-string"></span><span class="mv-word">${esc(w)}</span></div>`,
   place: (g, d) => {
     d.x0 = 10 + Math.random() * Math.max(10, g.W - d.w - 20); d.x = d.x0; d.y = g.H + 6;
-    d.vy = -(g.H + d.hgt + 20) / Math.max(6, 12 - g.prog * 4) * (0.85 + Math.random() * 0.3);
+    d.vy = -(g.H + d.hgt + 20) / Math.max(6.5, 13.5 - g.prog * 4) * (0.85 + Math.random() * 0.3);
   },
   move: (g, d, dt) => { d.y += d.vy * dt; d.x = d.x0 + Math.sin(d.t * 1.1 + d.ph) * 10; },
   gone: (g, d) => d.y < -d.hgt,
@@ -2884,7 +2890,7 @@ MODES.fish = moverMode({
     const top = g.H * 0.3, bottom = g.H - 40 - d.hgt;
     d.baseY = top + Math.random() * Math.max(10, bottom - top); d.y = d.baseY;
     d.x = d.dir > 0 ? -d.w : g.W;
-    d.vx = d.dir * (g.W + d.w) / Math.max(6.5, 13 - g.prog * 4) * d.kind.sp * (0.85 + Math.random() * 0.3);
+    d.vx = d.dir * (g.W + d.w) / Math.max(7, 14.5 - g.prog * 4) * d.kind.sp * (0.85 + Math.random() * 0.3);
   },
   move: (g, d, dt) => { d.x += d.vx * dt; d.y = d.baseY + Math.sin(d.t * 1.4 + d.ph) * 6; },
   gone: (g, d) => d.dir > 0 ? d.x > g.W + 4 : d.x < -d.w - 4,
