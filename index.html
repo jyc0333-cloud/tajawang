@@ -594,6 +594,10 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
 .ol-make{text-align:center}
 .ol-make .ov-icon{margin-bottom:4px}
 
+/* PC·태블릿 추천 안내 */
+.mc-tag{margin-top:6px;background:rgba(255,255,255,.75);padding:1px 7px;font-size:12px;color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.ov-pc{background:#e8f4ff;color:var(--ink);font-size:14px;line-height:1.45;padding:6px 10px;margin:0 auto 12px;box-shadow:0 0 0 2px var(--ink);max-width:340px}
+
 </style>
 </head>
 <body>
@@ -1712,13 +1716,13 @@ const CARDS = [
   { id: 'zombie', icon: '🧟', name: '좀비 습격', desc: '울타리를 지켜라', group: 'a', c: 'c9', best: '점' },
   { id: 'balloon', icon: '🎈', name: '풍선 팡팡', desc: '날아가기 전에 터뜨려!', group: 'a', c: 'c6', best: '점' },
   { id: 'fish', icon: '🎣', name: '낚시왕', desc: '헤엄치는 물고기 낚기', group: 'a', c: 'c3', best: '점' },
-  { id: 'mole', icon: '🐹', name: '두더지 잡기', desc: '60초 안에 쏙쏙!', group: 'a', c: 'c7', best: '점' },
+  { id: 'mole', icon: '🐹', name: '두더지 잡기', desc: '60초 안에 쏙쏙!', group: 'a', c: 'c7', best: '점', pc: true },
   { id: 'memory', icon: '🧠', name: '기억력 타자', desc: '보고, 외우고, 쳐라', group: 'b', c: 'c4', best: '점' },
   { id: 'blank', icon: '🔍', name: '빈칸 채우기', desc: '사라진 낱말 찾기', group: 'b', c: 'c2', best: '점' },
   { id: 'scramble', icon: '🔀', name: '뒤죽박죽', desc: '섞인 글자 바로잡기', group: 'b', c: 'c8', best: '개' },
   { id: 'tower', icon: '🧱', name: '낱말 탑 쌓기', desc: '높이높이 쌓아 올려라', group: 'b', c: 'c1', best: '층' },
-  { id: 'race', icon: '🏎️', name: '타자 레이싱', desc: '동물 친구들과 경주', group: 'c', c: 'c7', best: '타' },
-  { id: 'bomb', icon: '💣', name: '시간 폭탄', desc: '폭탄이 터지기 전에!', group: 'c', c: 'c8', best: '개' },
+  { id: 'race', icon: '🏎️', name: '타자 레이싱', desc: '동물 친구들과 경주', group: 'c', c: 'c7', best: '타', pc: true },
+  { id: 'bomb', icon: '💣', name: '시간 폭탄', desc: '폭탄이 터지기 전에!', group: 'c', c: 'c8', best: '개', pc: true },
   { id: 'timeattack', icon: '⏱️', name: '60초 타임어택', desc: '1분 동안 최대한 많이', group: 'c', c: 'c5', best: '개' },
   { id: 'rhythm', icon: '🎹', name: '자판 리듬', desc: '박자에 맞춰 톡톡', group: 'c', c: 'c9', best: '점' },
   { id: 'duel', icon: '⚔️', name: '친구 대결', desc: '한 컴퓨터에서 번갈아', group: 'c', c: 'c6' },
@@ -1751,7 +1755,7 @@ MODES.home = {
   mount(root) {
     const card = (c) => {
       const b = c.best ? getBest(c.id) : 0;
-      return `<button class="mcard ${c.c}" data-go="${c.id}"><span class="mc-icon">${pxi(c.icon, 48, 16)}</span><span class="mc-name">${c.name}</span><span class="mc-desc">${c.desc}</span>${b ? `<span class="mc-best">${pxi('🏆', 14, 12)} ${b.toLocaleString()}${c.best}</span>` : ''}</button>`;
+      return `<button class="mcard ${c.c}" data-go="${c.id}"><span class="mc-icon">${pxi(c.icon, 48, 16)}</span><span class="mc-name">${c.name}</span><span class="mc-desc">${c.desc}</span>${c.pc ? '<span class="mc-tag">💻 PC·태블릿 추천</span>' : ''}${b ? `<span class="mc-best">${pxi('🏆', 14, 12)} ${b.toLocaleString()}${c.best}</span>` : ''}</button>`;
     };
     const d = DATA[state.lang];
     root.innerHTML = `<div class="home">
@@ -2159,10 +2163,16 @@ function stopGame(mode) {
   mode.running = false; cancelAnimationFrame(mode.raf);
   if (mode._vis) document.removeEventListener('visibilitychange', mode._vis);
 }
+const PC_GAMES = ['mole', 'race', 'bomb'];
+function pcHint(id) {
+  return PC_GAMES.includes(id) && (innerWidth <= 480 || innerHeight <= 680)
+    ? '<div class="ov-pc">💻 화면이 작은 휴대폰에서는 입력창이 아래에 있어요.<br>PC나 태블릿에서 하면 더 편해요!</div>' : '';
+}
 function startBtnHtml(icon, title, rules, bestKey, unit) {
   const b = getBest(bestKey);
   return `<div class="ov-icon">${icon}</div><h3>${title}</h3><ul class="rules">${rules.map(r => `<li>${r}</li>`).join('')}</ul>
     ${b ? `<div class="ov-best">🏆 내 최고 기록 <b>${b.toLocaleString()}${unit}</b></div>` : ''}
+    ${pcHint(bestKey)}
     <button class="btn primary big" data-start>시작하기 ▶</button><div class="ov-small">입력창에서 엔터를 눌러도 시작해요</div>`;
 }
 
@@ -2476,6 +2486,7 @@ MODES.race = {
     showOverlay(this.ov, `<div class="ov-icon">🏁</div><h3>${RACE_DIFF[this.diff].icon} ${RACE_DIFF[this.diff].name} 레이스</h3>
       <ul class="rules"><li>문장 3개를 정확하게 치고 <b>엔터</b>!</li><li>틀린 글자가 있으면 고쳐야 넘어가요</li><li>상대: ${sp}</li></ul>
       ${getBest('race') ? `<div class="ov-best">🏆 내 최고 <b>${getBest('race')}타</b></div>` : ''}
+      ${pcHint('race')}
       <button class="btn primary big" data-start>출발 준비 ▶</button>`);
     $('[data-start]', this.ov).onclick = () => this.go();
     this.updStats();
