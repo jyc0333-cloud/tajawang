@@ -511,7 +511,7 @@ main{max-width:1000px;margin:0 auto;padding:22px clamp(14px,3vw,26px) 70px}
   .mgrid{gap:14px}
   .name-in{width:130px}
 }
-@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 
 /* ===== 온라인 대결 ===== */
 .ol-info{text-align:center}
